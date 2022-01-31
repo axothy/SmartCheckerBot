@@ -1,3 +1,11 @@
+/**
+* @brief Smart AI checker bot using cost of situation
+* @authors Chebotin Alexandr
+* @date 31.01.2022
+
+*/
+
+
 #include <vector>
 #include <array>
 #include <iostream>
@@ -8,6 +16,10 @@
 #include <chrono>
 #include <future>
 
+/**
+* Class timer for measuring bot time effectiveness. Uses std::chrono
+
+*/
 
 class Timer {
 public:
@@ -23,6 +35,10 @@ private:
 	std::chrono::time_point<std::chrono::steady_clock> start, end;
 };
 
+/**
+* Math function signum.
+* @params numbr Takes int number
+*/
 
 int sign(int numbr) {
 	int sgn = 0;
@@ -116,6 +132,12 @@ public:
 	std::vector<PosTurn> PosMovesEnemy;
 
 	bool canEnemyEat = false;
+	
+	/**
+	* 
+	* Bot analyses any playboard.
+	
+	*/
 
 	void initBoard() {
 		PosBoard[0] = { 2,0,2,0,1,0,1,0 };
@@ -139,6 +161,12 @@ public:
 		PosBoard[7] = { 0,2,0,1,0,3,0,3 };
 	}*/
 
+
+	/**
+	* Prints board
+	* @params Board Takes 8x8 array of playboard
+	
+	*/
 	void printBoard(std::array<std::array<int, 8>, 8>& Board) {
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
@@ -148,6 +176,11 @@ public:
 		}
 	}
 
+	/**
+	* Check borders
+	* @params x y dx dy Takes coordinates
+	
+	*/
 	inline bool CheckBorders(int x, int y, int dx, int dy) {
 		return x + dx >= 0 && x + dx < 8 && y + dy >= 0 && y + dy < 8;
 	}
@@ -166,7 +199,9 @@ public:
 		return false;
 	}
 
-	void CheckEats(std::array<std::array<int, 8>, 8>& Board, int x, int y, int dx, int dy, Positions Col, Positions enemyCol, std::vector<PosTurn>& movesVec) {
+	void CheckEats(std::array<std::array<int, 8>, 8>& Board, int x, int y, int dx, int dy, 
+		Positions Col, Positions enemyCol, std::vector<PosTurn>& movesVec) {
+
 		if (CheckBorders(x, y, dx, dy)) {
 			if (Board[x + dx][y + dy] == enemyCol || Board[x + dx][y + dy] == enemyCol + 2) {
 				if (CheckBorders(x, y, 2 * dx, 2 * dy) && Board[x + 2 * dx][y + 2 * dy] == CELL_PLBL) {
@@ -188,7 +223,9 @@ public:
 		}
 	}
 
-	void CheckEatsForKing(std::array<std::array<int, 8>, 8>& Board, int x, int y, int dx, int dy, Positions Col, Positions enemyCol, std::vector<PosTurn>& movesVec) {
+	void CheckEatsForKing(std::array<std::array<int, 8>, 8>& Board, int x, int y, int dx, int dy, 
+		Positions Col, Positions enemyCol, std::vector<PosTurn>& movesVec) {
+
 		int ddx = sign(dx);
 		int ddy = sign(dy);
 		while (CheckBorders(x, y, dx, dy)) {
@@ -198,7 +235,7 @@ public:
 					auto eatedxy = std::make_pair(x + dx, y + dy);
 
 					dx += ddx;
-					dy += ddy;//то переходим на эту клетку
+					dy += ddy;//С‚Рѕ РїРµСЂРµС…РѕРґРёРј РЅР° СЌС‚Сѓ РєР»РµС‚РєСѓ
 					while (CheckBorders(x, y, dx, dy) && Board[x + dx][y + dy] == CELL_PLBL) {
 						auto xy = std::make_pair(x, y);
 						auto dxdy = std::make_pair(x + dx, y + dy);
@@ -282,13 +319,13 @@ public:
 	void CheckMovesForKing(std::array<std::array<int, 8>, 8>& Board, int x, int y, int dx, int dy, std::vector<PosTurn>& movesVec) {
 		int ddx = sign(dx);
 		int ddy = sign(dy);
-		while (CheckBorders(x, y, dx, dy) && PosBoard[x + dx][y + dy] == CELL_PLBL) { //и пока нет шашек на клетке
+		while (CheckBorders(x, y, dx, dy) && PosBoard[x + dx][y + dy] == CELL_PLBL) { //Рё РїРѕРєР° РЅРµС‚ С€Р°С€РµРє РЅР° РєР»РµС‚РєРµ
 			auto xy = std::make_pair(x, y);
 			auto dxdy = std::make_pair(x + dx, y + dy);
 			movesVec.push_back({ xy, dxdy });
 			movesVec[movesVec.size() - 1].relevance += CAN_GO;
 			dx += ddx;
-			dy += ddy; //передвигаемся вперед
+			dy += ddy; //РїРµСЂРµРґРІРёРіР°РµРјСЃСЏ РІРїРµСЂРµРґ
 		}
 	}
 
@@ -330,7 +367,9 @@ public:
 	}
 
 	void CheckContinue
-	(std::array<std::array<int, 8>, 8>& Board, ternaryTree* wayTree, Positions enemyCol, std::pair<int, int> stop, std::vector<std::pair<int, int>>& enemyPos) {
+	(std::array<std::array<int, 8>, 8>& Board, ternaryTree* wayTree, Positions enemyCol, 
+		std::pair<int, int> stop, std::vector<std::pair<int, int>>& enemyPos) {
+
 		int dx = wayTree->getDX();
 		int dy = wayTree->getDY();
 		int x = wayTree->getXto();
@@ -682,7 +721,8 @@ public:
 	}
 
 	void TryMoveEnemy
-	(std::array<std::array<int, 8>, 8>& Board, std::vector<PosTurn>& movesVec, PosTurn& pos, PosTurn& enemyTurn, Positions Col, Positions enemyCol) {
+	(std::array<std::array<int, 8>, 8>& Board, std::vector<PosTurn>& movesVec, PosTurn& pos, PosTurn& enemyTurn,
+		Positions Col, Positions enemyCol) {
 
 
 		if (!enemyTurn.another_eats.empty()) {
@@ -791,7 +831,7 @@ public:
 	}
 
 	void TryMoveAllPoss(std::vector<PosTurn>& movesVec, Positions Col, Positions enemyCol) {
-		//пытаемся сходить каждым ходом, чтобы произвести оценку
+		//РїС‹С‚Р°РµРјСЃСЏ СЃС…РѕРґРёС‚СЊ РєР°Р¶РґС‹Рј С…РѕРґРѕРј, С‡С‚РѕР±С‹ РїСЂРѕРёР·РІРµСЃС‚Рё РѕС†РµРЅРєСѓ
 		Timer t;
 		for (auto& pos : movesVec) {
 			TryMove(pos, Col, enemyCol);
@@ -799,7 +839,7 @@ public:
 	}
 
 	void TryMoveAllPoss1(std::vector<PosTurn>& movesVec, Positions Col, Positions enemyCol) {
-		//пытаемся сходить каждым ходом, чтобы произвести оценку
+		//РїС‹С‚Р°РµРјСЃСЏ СЃС…РѕРґРёС‚СЊ РєР°Р¶РґС‹Рј С…РѕРґРѕРј, С‡С‚РѕР±С‹ РїСЂРѕРёР·РІРµСЃС‚Рё РѕС†РµРЅРєСѓ
 
 		std::vector<std::future<void>> vecAsy(movesVec.size());
 
